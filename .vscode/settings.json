@@ -21,7 +21,10 @@
         "esp_modbus_slave.h": "c",
         "esp_modbus_master.h": "c",
         "cstddef": "c",
-        "format": "c"
+        "format": "c",
+        "esp_log.h": "c",
+        "freertos.h": "c",
+        "sdkconfig.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3"

@@ -54,18 +54,21 @@ bool mb_is_connected()
     uint64_t curr = esp_timer_get_time();
     return ((last_message_time + timeout) > curr);
 }
-void event_task()
+void event_task(void* taskHandle)
 {
     while (1)
     {
-        mbc_slave_check_event(MB_READ_WRITE_MASK);
-        
+        mb_event_group_t event = mbc_slave_check_event(MB_READ_WRITE_MASK);
+
+        if(event & (MB_EVENT_HOLDING_REG_WR))
+            xTaskNotifyGive(taskHandle);
+
         last_message_time = esp_timer_get_time();
         //ESP_LOGI(TAG, "Recebido: %llu", last_message_time);
     }
     vTaskDelete(NULL);
 }
-void slave_init(uint16_t *registers, uint16_t registers_length)
+void slave_init(uint16_t *registers, uint16_t registers_length, TaskHandle_t task_handle)
 {
     void *slave_handler = NULL;
     ESP_LOGI(TAG, "Slave init");
@@ -95,5 +98,5 @@ void slave_init(uint16_t *registers, uint16_t registers_length)
     ESP_LOGI(TAG, "Modbus slave stack initialized.");
 
     TaskHandle_t handle = NULL;
-    xTaskCreate(event_task, "event_task", 4096, NULL, 0, &handle);
+    xTaskCreate(event_task, "event_task", 4096, (void*) task_handle, 0, &handle);
 }
